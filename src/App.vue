@@ -159,7 +159,42 @@ export default {
     };
   },
 
+  created() {
+    setTimeout(async () => {
+      const f = await fetch(
+        `https://min-api.cryptocompare.com/data/all/coinlist?summary=true`
+      );
+      let result = await f.json();
+      for (let item in result.Data) {
+        this.arr.push(item);
+      }
+    }, 0);
+
+    const tickersData = localStorage.getItem("cryptonomicon-list");
+    if (tickersData) {
+      this.tickers = JSON.parse(tickersData);
+      this.tickers.forEach((ticker) => {
+        this.subscribeToUpdates(ticker.name);
+      });
+    }
+  },
+
   methods: {
+    subscribeToUpdates(tickerName) {
+      setInterval(async () => {
+        console.log("Проверка работы запросов обновления монет ", tickerName);
+        // const f = await fetch(
+        //   `https://min-api.cryptocompare.com/data/price?fsym=${tickerName}&tsyms=USD&api_key=0d518bbc6539ac5eb1125343924aaac135fdf52e78cae199eb7bb54b319e5798`
+        // );
+        // const data = await f.json();
+        // console.log(data);
+        // this.tickers.find((t) => t.name === tickerName).price =
+        //   data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
+        // if (this.sel?.name === tickerName) {
+        //   this.graph.push(data.USD);
+        // }
+      }, 15000);
+    },
     test() {
       this.flag = null;
       const result = this.arr.filter((word) =>
@@ -184,19 +219,13 @@ export default {
           this.flag = "Такой тикер уже добавлен";
         } else {
           this.tickers.push(currentTicker);
-          // setInterval(async () => {
-          //   const f = await fetch(
-          //     `https://min-api.cryptocompare.com/data/price?fsym=${currentTicker.name}&tsyms=USD&api_key=0d518bbc6539ac5eb1125343924aaac135fdf52e78cae199eb7bb54b319e5798`
-          //   );
 
-          //   const data = await f.json();
-          //   console.log(data);
-          //   this.tickers.find((t) => t.name === currentTicker.name).price =
-          //     data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
-          //   if (this.sel?.name === currentTicker.name) {
-          //     this.graph.push(data.USD);
-          //   }
-          // }, 6000);
+          localStorage.setItem(
+            "cryptonomicon-list",
+            JSON.stringify(this.tickers)
+          );
+          console.log(localStorage);
+          this.subscribeToUpdates(currentTicker.name);
         }
 
         this.ticker = "";
@@ -209,6 +238,7 @@ export default {
     handleDelete(tickerToRemove) {
       this.tickers = this.tickers.filter((t) => t != tickerToRemove);
       this.sel = tickerToRemove === this.sel ? null : this.sel;
+      localStorage.setItem("cryptonomicon-list", JSON.stringify(this.tickers));
     },
 
     normilizeGraph() {
@@ -218,18 +248,6 @@ export default {
         (price) => 10 + ((price - minValue) * 90) / (maxValue - minValue)
       );
     }
-  },
-
-  created() {
-    setTimeout(async () => {
-      const f = await fetch(
-        `https://min-api.cryptocompare.com/data/all/coinlist?summary=true`
-      );
-      let result = await f.json();
-      for (let item in result.Data) {
-        this.arr.push(item);
-      }
-    }, 0);
   }
 };
 </script>
