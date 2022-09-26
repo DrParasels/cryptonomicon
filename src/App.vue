@@ -82,7 +82,7 @@
             @click="select(t)"
             :class="{
               'border-4': selectedTicker === t,
-              'bg-red-100': notHaveDataTicker === t
+              'bg-red-100': noCurrencyTickers.includes(t.name)
             }"
             class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
           >
@@ -174,7 +174,7 @@
 // [] 7. График ужасно выглядит, если будет много цен | Критичность: 2
 // [] 10. Магические строки и числа (URL, 5000милисекунд задежки, ключ локал сторейдж) | Критичность: 1
 
-import { subscribeToTicker, unsubscribeFromTicker } from "./api";
+import { subscribeToTicker, unsubscribeFromTicker, noDataTickers } from "./api";
 
 export default {
   name: "App",
@@ -184,6 +184,7 @@ export default {
       ticker: "",
       tickers: [],
       selectedTicker: null,
+      noCurrencyTickers: [],
       graph: [],
       flag: null,
       coinList: [],
@@ -219,9 +220,14 @@ export default {
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
       this.tickers.forEach((ticker) => {
-        subscribeToTicker(ticker.name, (newPrice) =>
-          this.updateTicker(ticker.name, newPrice)
-        );
+        subscribeToTicker(ticker.name, (newPrice) => {
+          this.updateTicker(ticker.name, newPrice);
+          noDataTickers.forEach((x) => this.noCurrencyTickers.push(x));
+          console.log("foo");
+        });
+      });
+      this.noCurrencyTickers.forEach((item) => {
+        this.notHaveDataTicker = item;
       });
     }
 
@@ -313,9 +319,9 @@ export default {
           this.tickers = [...this.tickers, currentTicker];
           this.ticker = "";
           this.filter = "";
-          subscribeToTicker(currentTicker.name, (newPrice) =>
-            this.updateTicker(currentTicker.name, newPrice)
-          );
+          subscribeToTicker(currentTicker.name, (newPrice) => {
+            this.updateTicker(currentTicker.name, newPrice);
+          });
         }
       }
     },
