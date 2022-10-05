@@ -22,7 +22,6 @@ socket.addEventListener("message", (e) => {
       return;
     }
     noDataTickers.add(parameter.split("~")[2]);
-    console.log(noDataTickers);
   }
   if (type !== AGGREGATE_INDEX || newPrice === undefined) {
     return;
@@ -64,7 +63,6 @@ export const subscribeToTicker = (ticker, cb) => {
   const subscribers = tickersHandlers.get(ticker) || [];
   tickersHandlers.set(ticker, [...subscribers, cb]);
   subscribeToTickerOnWs(ticker);
-  console.log(noDataTickers, "12121");
 };
 
 export const unsubscribeFromTicker = (ticker) => {
